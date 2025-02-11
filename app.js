@@ -11,9 +11,11 @@ const app = express();
 app.use(bodyParser.json());
 const localhost = "localhost";
 
-// app.use(cors({
-//   origin: ['http://localhost:8081', `http://${localhost}:8081`, `http://localhost:3001`],
-// }));
+app.use(cors({
+  origin: '*', 
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Content-Type,Authorization',
+}));
 
 app.get('/', (req, res) => {
   res.send('Hello from the server side!');
