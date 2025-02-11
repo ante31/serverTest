@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-// const cors = require('cors');
+const cors = require('cors');
 const cjenikRouter = require('./routes/cjenikRouter');
 const kategorijaRouter = require('./routes/kategorijaRouter');
 const orderRouter = require('./routes/ordersRouter');
