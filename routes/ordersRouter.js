@@ -1,6 +1,7 @@
 const express = require('express');
 const { ref, get, push, set, update } = require('firebase/database');
 const database = require('../dbConnect');
+const { sendPushNotification } = require('../services/sendPushNotification');
 
 const orderRouter = express.Router();
 
@@ -76,6 +77,7 @@ orderRouter.get('/:year/:month/:day', async (req, res) => {
 
 
 // PATCH endpoint to update order status
+// PATCH endpoint to update order status
 orderRouter.patch('/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params; // Extract orderId from the URL
@@ -92,14 +94,33 @@ orderRouter.patch('/:orderId', async (req, res) => {
 
     // Fetch current order data to check if it exists
     const snapshot = await get(reference);
-    console.log(snapshot.val());
-
     
     if (!snapshot.exists()) {
       return res.status(404).send('Order not found');
     }
 
-    // // Update the status of the order
+    const orderData = snapshot.val();
+    const pushToken = orderData.token;
+    console.log(pushToken);
+    if (!pushToken) {
+      console.log('No push token found for this order');
+    } else {
+      // Construct the message based on the status
+      let message = '';
+      if (status === 'accepted') {
+        message = `Your order #${orderId} has been accepted.`;
+      } else if (status === 'rejected') {
+        message = `Your order #${orderId} has been rejected.`;
+      } else if (status === 'completed') {
+        message = `Your order #${orderId} has been completed.`;
+      }
+
+      // Send the push notification (assumes you have a sendPushNotification function)
+      await sendPushNotification(pushToken, message);
+      console.log('Push notification sent to client');
+    }
+
+    // Update the status of the order in the database
     await update(reference, { status });
 
     res.status(200).send(`Order ${orderId} status updated to ${status}`);
@@ -108,7 +129,5 @@ orderRouter.patch('/:orderId', async (req, res) => {
     res.status(500).send('Failed to update order status');
   }
 });
-
-
 module.exports = orderRouter;
 
