@@ -104,7 +104,6 @@ orderRouter.patch('/:orderId', async (req, res) => {
     if (!pushToken) {
       console.log('No push token found for this order');
     } else {
-      // Construct the message based on the status
       let message = '';
       const lang = orderData.language;
       let title = lang === 'hr' ? 'Obavijest' : 'Order Update';
@@ -112,11 +111,10 @@ orderRouter.patch('/:orderId', async (req, res) => {
         message = lang === 'hr' ? 'Vaša narudžba je prihvaćena': `Your order has been accepted.`;
       } else if (status === 'rejected') {
         message = lang === 'hr' ? 'Vaša narudžba je odbijena': `Your order has been rejected.`;
-      } else if (status === 'completed' && !orderData.isDelivery) {
+      } else if (status === 'completed' && orderData.isDelivery) {
         message = lang === 'hr' ? 'Vaša narudžba je završena': `Your order has been completed.`;
       }
 
-      // Send the push notification (assumes you have a sendPushNotification function)
       await sendPushNotification(pushToken, title, message);
       console.log('Push notification sent to client');
     }
