@@ -77,7 +77,6 @@ orderRouter.get('/:year/:month/:day', async (req, res) => {
 
 
 // PATCH endpoint to update order status
-// PATCH endpoint to update order status
 orderRouter.patch('/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params; // Extract orderId from the URL
@@ -107,16 +106,18 @@ orderRouter.patch('/:orderId', async (req, res) => {
     } else {
       // Construct the message based on the status
       let message = '';
+      const lang = orderData.language;
+      let title = lang === 'hr' ? 'Obavijest' : 'Order Update';
       if (status === 'accepted') {
-        message = `Your order #${orderId} has been accepted.`;
+        message = lang === 'hr' ? 'Vaša narudžba je prihvaćena': `Your order has been accepted.`;
       } else if (status === 'rejected') {
-        message = `Your order #${orderId} has been rejected.`;
-      } else if (status === 'completed') {
-        message = `Your order #${orderId} has been completed.`;
+        message = lang === 'hr' ? 'Vaša narudžba je odbijena': `Your order has been rejected.`;
+      } else if (status === 'completed' && !orderData.isDelivery) {
+        message = lang === 'hr' ? 'Vaša narudžba je završena': `Your order has been completed.`;
       }
 
       // Send the push notification (assumes you have a sendPushNotification function)
-      await sendPushNotification(pushToken, message);
+      await sendPushNotification(pushToken, title, message);
       console.log('Push notification sent to client');
     }
 
