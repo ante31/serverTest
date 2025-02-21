@@ -40,8 +40,10 @@ cjenikRouter.get('/:title', async (req, res) => {
 cjenikRouter.get('/:title/:id', async (req, res) => {
   try {
     const { title, id } = req.params;
+    console.log('Fetching item with title:', title, 'and id:', id);
     const reference = ref(database, `Cjenik/${title}/${id}`);
     const snapshot = await get(reference);
+    console.log('Snapshot:', snapshot.val());
 
     if (snapshot.exists()) {
       res.json(snapshot.val());
