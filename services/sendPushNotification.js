@@ -10,7 +10,6 @@ async function sendPushNotification(token, title, message) {
         body: JSON.stringify({
           to: token, // The Expo push token
           sound: 'default',
-          "tag": "token",
           title: title,
           body: message,
           // data: { orderId: 1234 }, // Optional: You can include additional data if needed

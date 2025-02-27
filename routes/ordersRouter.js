@@ -7,7 +7,6 @@ const orderRouter = express.Router();
 
 orderRouter.get('/', async (req, res) => {
   try {
-    console.log("OrderRouter get");
     const reference = ref(database, 'Orders');
     const snapshot = await get(reference);
 
@@ -23,18 +22,13 @@ orderRouter.get('/', async (req, res) => {
 });
 
 orderRouter.post('/', async (req, res) => {
-  try {
-    console.log('Order submitted', req.body);
-    
+  try {    
     // Extract and format date from time
     const time = new Date(req.body.time);
     time.setMinutes(time.getMinutes() + time.getTimezoneOffset()); // Convert UTC to local
     const year = time.getFullYear();
     const month = String(time.getMonth() + 1).padStart(2, '0');
     const day = String(time.getDate()).padStart(2, '0');
-    
-    console.log(time);
-    console.log(year, month, day)
 
     // Reference the order location in the database
     const reference = ref(database, `Orders/${year}/${month}/${day}`);
@@ -49,6 +43,28 @@ orderRouter.post('/', async (req, res) => {
   }
 });
 
+
+orderRouter.get('/:year/:month/:day/:orderId', async (req, res) => {
+  try {
+    const { year, month, day, orderId } = req.params;
+    console.log(year, month, day, orderId );
+
+    reference = ref(database, `Orders/${year}/${month}/${day}/${orderId}`);
+    
+    const snapshot = await get(reference);
+
+    if (snapshot.exists()) {
+      res.json(snapshot.val());
+    } else {
+      res.status(404).send('No order found');
+    }
+  } catch (error) {
+    console.error('Error fetching order:', error);
+    res.status(500).send('Failed to fetch order');
+  }
+});
+
+
 orderRouter.get('/:year/:month/:day', async (req, res) => {
   try {
     const { year, month, day } = req.params;
@@ -60,10 +76,6 @@ orderRouter.get('/:year/:month/:day', async (req, res) => {
 
     if (snapshot.exists()) {
       const orders = snapshot.val();
-      // Convert to array while keeping IDs and filtering out rejected orders
-      // const nonRejectedOrders = Object.entries(orders)
-      //   .filter(([id, order]) => order.status !== 'rejected')
-      //   .map(([id, order]) => ({ id, ...order }));
 
       res.json(orders);
     } else {
@@ -100,13 +112,14 @@ orderRouter.patch('/:orderId', async (req, res) => {
 
     const orderData = snapshot.val();
     const pushToken = orderData.token;
-    console.log(pushToken);
+    console.log("ORdeRDATA",orderData);
     if (!pushToken) {
       console.log('No push token found for this order');
     } else {
+      // Construct the message based on the status
       let message = '';
       const lang = orderData.language;
-      let title = lang === 'hr' ? 'Obavijest' : 'Order Update';
+      let title = "Gricko";
       if (status === 'accepted') {
         message = lang === 'hr' ? 'Vaša narudžba je prihvaćena': `Your order has been accepted.`;
       } else if (status === 'rejected') {
@@ -114,12 +127,11 @@ orderRouter.patch('/:orderId', async (req, res) => {
       } else if (status === 'completed' && !orderData.isDelivery) {
         message = lang === 'hr' ? 'Vaša narudžba je završena': `Your order has been completed.`;
       }
-
-      if (status === 'accepted' || status === 'rejected' || (status === 'completed' && !orderData.isDelivery)) {
-        await sendPushNotification(pushToken, title, message);
-      }
-
+      if (message !== '') {
+      // Send the push notification (assumes you have a sendPushNotification function)
+      await sendPushNotification(pushToken, title, message);
       console.log('Push notification sent to client');
+      }
     }
 
     // Update the status of the order in the database
@@ -131,5 +143,7 @@ orderRouter.patch('/:orderId', async (req, res) => {
     res.status(500).send('Failed to update order status');
   }
 });
+
+
 module.exports = orderRouter;
 
