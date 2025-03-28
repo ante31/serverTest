@@ -6,6 +6,7 @@ const kategorijaRouter = require('./routes/kategorijaRouter');
 const orderRouter = require('./routes/ordersRouter');
 const generalRouter = require('./routes/generalRouter');
 const extrasRouter = require('./routes/extrasRouter');
+const authRouter = require('./routes/authRouter');
 require('dotenv').config();
 
 const app = express();
@@ -28,6 +29,7 @@ app.use('/orders', orderRouter);
 app.use('/kategorije', kategorijaRouter);
 app.use('/general', generalRouter);
 app.use('/extras', extrasRouter);
+app.use('/auth', authRouter);
 
 const port = process.env.PORT || 3000;
 // Pokretanje servera
