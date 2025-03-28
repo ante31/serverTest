@@ -141,6 +141,57 @@ extrasRouter.post('/:categoryName', async (req, res) => {
   }
 });
 
+extrasRouter.put('/:categoryName/:extraKey', async (req, res) => {
+  try {
+    const { categoryName, extraKey } = req.params;
+    const { name_hr, name_en, price } = req.body;
+
+    console.log("🔍 DEBUG: Primljeni parametri", req.params);
+    console.log("🔍 DEBUG: Primljeni podaci", req.body);
+
+
+    // Firebase referenca
+    const reference = ref(database, `Cjenik/Prilozi/${categoryName}`);
+    console.log("🔍 DEBUG: Firebase reference path", reference);
+
+    const snapshot = await get(reference);
+    const existingData = snapshot.val();
+
+    console.log("🔍 DEBUG: Postojeći podaci u kategoriji", existingData);
+
+    // Provjera postojanja ključa
+    const normalizedExtraKey = extraKey.trim().toLowerCase();
+    const existingKeys = Object.keys(existingData || {});
+    const normalizedExistingKey = existingKeys.find(key => key.toLowerCase().trim() === normalizedExtraKey);
+
+    if (!normalizedExistingKey) {
+      console.error("❌ ERROR: Prilog '%s' nije pronađen u kategoriji '%s'", extraKey, categoryName);
+      return res.status(404).send(`Prilog '${extraKey}' nije pronađen u kategoriji '${categoryName}'`);
+    }
+
+    console.log("🔍 DEBUG: Pronađen ključ:", normalizedExistingKey);
+
+    // Normalizacija novog ključa
+    const newKey = `${name_hr}|${name_en}`;
+    if (newKey !== extraKey) {
+      delete existingData[normalizedExistingKey];
+    }
+
+    // Ažuriranje sa novim ključem
+    existingData[newKey] = price;
+    console.log("🔍 DEBUG: Ažurirani podaci", existingData);
+
+    await set(reference, existingData);
+
+    res.status(200).json({ message: `Prilog '${name_hr}' uspješno uređen u kategoriji '${categoryName}'.` });
+  } catch (error) {
+    console.error('❌ ERROR: Greška pri uređivanju priloga u Firebase:', error);
+    res.status(500).send('Neuspješno uređivanje priloga.');
+  }
+});
+
+
+
 
 
 
