@@ -1,6 +1,6 @@
 
 // Helper function to send push notification
-async function sendPushNotification(token, message) {
+async function sendPushNotification(token, title, message) {
     try {
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
@@ -10,9 +10,9 @@ async function sendPushNotification(token, message) {
         body: JSON.stringify({
           to: token, // The Expo push token
           sound: 'default',
-          title: 'Order Status Update',
+          title: title,
           body: message,
-          data: { orderId: 1234 }, // Optional: You can include additional data if needed
+          // data: { orderId: 1234 }, // Optional: You can include additional data if needed
         }),
       });
   
