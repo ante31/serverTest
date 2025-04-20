@@ -90,25 +90,6 @@ cjenikRouter.put('/:title/:id', async (req, res) => {
   }
 });
 
-cjenikRouter.post('/:category', async (req, res) => {
-  try {
-    const { category } = req.params;
-    const newMeal = req.body;
-
-    console.log('Adding new meal to category:', category);
-    console.log('Meal data:', newMeal);
-
-    const categoryRef = ref(database, `Cjenik/${category}`);
-    const newMealRef = push(categoryRef); // Generira novi ključ u Firebaseu
-
-    await set(newMealRef, newMeal);
-
-    res.json({ message: "Meal added successfully", id: newMealRef.key, data: newMeal });
-  } catch (error) {
-    console.error('Error adding meal to Firebase:', error);
-    res.status(500).send('Failed to add meal to Firebase');
-  }
-});
 
 
 
@@ -130,10 +111,13 @@ cjenikRouter.post('/updatePopularity', async (req, res) => {
         if (category === 'Prilozi') continue;
         for (const id in categories[category]) {
           if (id === meal.id) {
+            console.log(`Found meal with ID: ${id} in category: ${category}`);
             const mealRef = ref(database, `Cjenik/${category}/${id}`);
+            console.log(`Meal reference: ${mealRef}`);
+            console.log(`Current popularity: ${categories[category][id].popularity}`);
             //increment popularity
             await update(mealRef, { popularity: categories[category][id].popularity + 1 });
-            console.log(`Updated popularity from ${categories[category][id].popularity} to ${categories[category][id].popularity + 1} for ${meal.title}`);
+            console.log(`Updated popularity from ${categories[category][id].popularity} to ${categories[category][id].popularity + 1} for ${meal.name}`);
             break;
           }
         }
@@ -149,5 +133,25 @@ cjenikRouter.post('/updatePopularity', async (req, res) => {
   }
 }
 );
+
+cjenikRouter.post('/:category', async (req, res) => {
+  try {
+    const { category } = req.params;
+    const newMeal = req.body;
+
+    console.log('Adding new meal to category:', category);
+    console.log('Meal data:', newMeal);
+
+    const categoryRef = ref(database, `Cjenik/${category}`);
+    const newMealRef = push(categoryRef); // Generira novi ključ u Firebaseu
+
+    await set(newMealRef, newMeal);
+
+    res.json({ message: "Meal added successfully", id: newMealRef.key, data: newMeal });
+  } catch (error) {
+    console.error('Error adding meal to Firebase:', error);
+    res.status(500).send('Failed to add meal to Firebase');
+  }
+});
 
 module.exports = cjenikRouter;
