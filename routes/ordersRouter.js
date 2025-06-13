@@ -123,7 +123,7 @@ orderRouter.patch('/:orderId', async (req, res) => {
       if (status === 'accepted') {
         message = lang === 'hr' ? 'Vaša narudžba je prihvaćena': `Your order has been accepted.`;
       } else if (status === 'rejected') {
-        message = lang === 'hr' ? 'Vaša narudžba je odbijena': `Your order has been rejected.`;
+        message = lang === 'hr' ? 'Nažalost Vaša narudžba je odbijena': `Unfortunately your order has been rejected.`;
       } else if (status === 'completed' && !orderData.isDelivery) {
         message = lang === 'hr' ? 'Vaša narudžba je završena': `Your order has been completed.`;
       }
