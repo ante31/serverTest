@@ -8,6 +8,7 @@ const generalRouter = require('./routes/generalRouter');
 const extrasRouter = require('./routes/extrasRouter');
 const authRouter = require('./routes/authRouter');
 const annotationsRouter = require('./routes/annotationsRouter');
+const qrRedirecter = require('./qrRedirecter');
 require('dotenv').config();
 
 const app = express();
@@ -32,6 +33,7 @@ app.use('/general', generalRouter);
 app.use('/extras', extrasRouter);
 app.use('/auth', authRouter);
 app.use('/annotations', annotationsRouter);
+app.use('/qr', qrRedirecter);
 
 const port = process.env.PORT || 3000;
 // Pokretanje servera
