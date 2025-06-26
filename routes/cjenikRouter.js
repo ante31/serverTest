@@ -127,7 +127,7 @@ cjenikRouter.put('/:title/:id', async (req, res) => {
 
 cjenikRouter.post('/updatePopularity', async (req, res) => {
   const meals = req.body; // Don't destructure, just take it as an array
-  console.log('Updating popularity for:', meals);
+  //console.log('Updating popularity for:', meals);
   try {
     const reference = ref(database, 'Cjenik');
     const snapshot = await get(reference);

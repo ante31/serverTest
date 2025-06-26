@@ -6,7 +6,11 @@ require('dotenv').config();
 
 // Firebase
 const database = require('./dbConnect');
-const { ref, onValue } = require('firebase/database');
+
+// Sockets
+const generalSocket = require('./sockets/generalSocket');
+const cjenikSocket = require('./sockets/cjenikSocket');
+const ordersSocket = require('./sockets/ordersSocket');
 
 // Routeri
 const cjenikRouter = require('./routes/cjenikRouter');
@@ -26,10 +30,12 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server, {
   cors: {
-    origin: '*', // Prilagodi ako frontend nije localhost
-    methods: ['GET', 'POST']
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
+  transports: ['websocket'], // dodaj ovo ako frontend to traži
 });
+
 
 const port = process.env.PORT || 3000;
 const localhost = "192.168.190.14";
@@ -56,30 +62,11 @@ app.use('/general', generalRouter);
 app.use('/extras', extrasRouter);
 app.use('/auth', authRouter);
 app.use('/annotations', annotationsRouter);
-app.use('/qr', qrRedirecter);
-
-// Drži zadnje stanje general podataka
-let currentGeneralData = null;
-
-const generalRef = ref(database, 'General');
-
-// Jedan globalni listener na Firebase 'General' path
-onValue(generalRef, (snapshot) => {
-  const data = snapshot.val();
-  currentGeneralData = data;
-  console.log('🔥 Firebase → General updated:', data);
-  io.emit('general-update', data); // emitaj svim klijentima
-});
-
-io.on('connection', (socket) => {
-  console.log('📡 Frontend connected:', socket.id);
-
-  if (currentGeneralData !== null) {
-    socket.emit('general-update', currentGeneralData); // Send immediately
-  }
-});
 
 
+generalSocket(io, database);
+ordersSocket(io, database);
+cjenikSocket(io, database);
 
 // Pokretanje servera
 server.listen(port, () => {
