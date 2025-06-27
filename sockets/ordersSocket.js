@@ -1,7 +1,10 @@
 const { ref, onValue, onChildAdded, onChildChanged } = require('firebase/database');
 
 // Pretpostavimo da je "title" naziv kategorije cjenika
-function OrdersSocket(io, database) {
+console.log('📂 File ordersSocket.js je učitan');
+
+function ordersSocket(io, database) {
+console.log('🚀 [ordersSocket] pokrenut!');
 
 // Firebase listener – narudžbe za danas
 const today = new Date();
@@ -11,6 +14,8 @@ const day = String(today.getDate()).padStart(2, '0');
 const ordersPath = `Orders/${year}/${month}/${day}`;
 
 const ordersRef = ref(database, ordersPath);
+
+console.log('👂 Slušam na pathu:', ordersPath);
 
 onChildAdded(ordersRef, (snapshot) => {
   const newOrder = snapshot.val();
@@ -40,4 +45,4 @@ onChildChanged(ordersRef, (snapshot) => {
 });
 }
 
-module.exports = OrdersSocket;
+module.exports = ordersSocket;
