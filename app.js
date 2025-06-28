@@ -38,7 +38,7 @@ const io = new Server(server, {
 
 
 const port = process.env.PORT || 3000;
-const localhost = "192.168.190.14";
+const localhost = "localhost";
 
 // Middleware
 app.use(bodyParser.json());
