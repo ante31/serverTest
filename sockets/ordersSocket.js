@@ -1,48 +1,60 @@
 const { ref, onValue, onChildAdded, onChildChanged } = require('firebase/database');
 
-// Pretpostavimo da je "title" naziv kategorije cjenika
-console.log('📂 File ordersSocket.js je učitan');
-
 function ordersSocket(io, database) {
-console.log('🚀 [ordersSocket] pokrenut!');
+  let listener = null;
 
-// Firebase listener – narudžbe za danas
-const today = new Date();
-const year = today.getFullYear();
-const month = String(today.getMonth() + 1).padStart(2, '0');
-const day = String(today.getDate()).padStart(2, '0');
-const ordersPath = `Orders/${year}/${month}/${day}`;
+  function startListener() {
+    if (listener) listener.off?.(); // ako postoji stari listener, ugasi ga
 
-const ordersRef = ref(database, ordersPath);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const ordersPath = `Orders/${year}/${month}/${day}`;
+    const ordersRef = ref(database, ordersPath);
 
-console.log('👂 Slušam na pathu:', ordersPath);
+    console.log('Slušam na pathu:', ordersPath);
 
-onChildAdded(ordersRef, (snapshot) => {
-  const newOrder = snapshot.val();
-  const orderId = snapshot.key;
-  console.log('🆕 Firebase → Nova narudžba dodana:', orderId, newOrder);
+    listener = onChildAdded(ordersRef, (snapshot) => {
+      const newOrder = snapshot.val();
+      const orderId = snapshot.key;
+      console.log('Firebase → Nova narudžba dodana:', orderId, newOrder);
+      io.emit('order-added', { id: orderId, ...newOrder });
+    });
 
-  io.emit('order-added', {
-    id: orderId,
-    ...newOrder
-  });
-});
-
-onChildChanged(ordersRef, (snapshot) => {
-  const updatedOrder = snapshot.val();
-  const orderId = snapshot.key;
-
-  // Ako postoji status (npr. 'accepted', 'rejected', 'pending')
-  if (updatedOrder.status) {
-    console.log('🔄 Firebase → Status narudžbe promijenjen:', orderId, updatedOrder.status);
-
-    // Emit samo za tu narudžbu
-    io.emit(`order-updated-${orderId}`, {
-      id: orderId,
-      ...updatedOrder
+    onChildChanged(ordersRef, (snapshot) => {
+      const updatedOrder = snapshot.val();
+      const orderId = snapshot.key;
+      if (updatedOrder.status) {
+        console.log('Firebase → Status narudžbe promijenjen:', orderId, updatedOrder.status);
+        io.emit(`order-updated-${orderId}`, { id: orderId, ...updatedOrder });
+      }
     });
   }
-});
+
+  startListener();
+
+  // koliko milisekundi do sljedećih 03:00 ujutro
+  const now = new Date();
+  const nextRefresh = new Date(now);
+  nextRefresh.setHours(3, 0, 0, 0);
+  if (now >= nextRefresh) {
+    // ako je već prošlo 03:00 danas, pomakni na sutra
+    nextRefresh.setDate(nextRefresh.getDate() + 1);
+  }
+
+  const msUntilNextRefresh = nextRefresh.getTime() - now.getTime();
+
+  setTimeout(() => {
+    console.log('Prvi refresh u 03:00');
+    startListener();
+
+    // Svakih 24h nakon toga
+    setInterval(() => {
+      console.log('Refresha se orders socket');
+      startListener();
+    }, 1000 * 60 * 60 * 24);
+  }, msUntilNextRefresh);
 }
 
 module.exports = ordersSocket;
