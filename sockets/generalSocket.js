@@ -13,7 +13,7 @@ function generalSocket(io, database) {
   });
 
   io.on('connection', (socket) => {
-    console.log('📡 Frontend connected:', socket.id);
+    console.log('rontend connected:', socket.id);
 
     if (currentGeneralData !== null) {
       socket.emit('general-update', currentGeneralData);

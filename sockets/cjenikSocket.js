@@ -14,13 +14,13 @@ function cjenikSocket(io, database) {
       }
 
       const cjenikRoot = snapshot.val();
-      console.log('📥 Dohvaćen Cjenik:', Object.keys(cjenikRoot));
+      // console.log('Dohvaćen Cjenik:', Object.keys(cjenikRoot));
 
       const categoryKeys = Object.keys(cjenikRoot);
 
       for (const category of categoryKeys) {
         const categoryRef = ref(database, `Cjenik/${category}`);
-        console.log(`📡 Slušam promjene na: Cjenik/${category}`);
+        console.log(`Slušam promjene na: Cjenik/${category}`);
 
         onValue(categoryRef, (snapshot) => {
           const newData = snapshot.val() || {};
@@ -33,7 +33,7 @@ function cjenikSocket(io, database) {
 
           if (hasChanges) {
             previousStates[category] = newData; // spremamo novo pravo stanje (s popularity)
-            console.log(`📤 [Socket] Promjena za "${category}"`, newData);
+            // console.log(`📤 [Socket] Promjena za "${category}"`, newData);
             io.emit(`cjenik-update-${category}`, newData);
           } else {
             console.log(`⏸️ [Socket] Promjena "${category}" samo u popularity — ignoriram.`);
