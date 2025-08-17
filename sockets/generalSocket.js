@@ -13,7 +13,6 @@ function generalSocket(io, database) {
   });
 
   io.on('connection', (socket) => {
-    console.log('rontend connected:', socket.id);
 
     if (currentGeneralData !== null) {
       socket.emit('general-update', currentGeneralData);

@@ -2,6 +2,7 @@ const express = require('express');
 const { ref, get, push, set, update } = require('firebase/database');
 const database = require('../dbConnect');
 const { sendPushNotification } = require('../services/sendPushNotification');
+const { sendSMS } = require('../services/sendSMS');
 
 const orderRouter = express.Router();
 
@@ -129,7 +130,8 @@ orderRouter.patch('/:orderId', async (req, res) => {
       }
       if (message !== '') {
       // Send the push notification (assumes you have a sendPushNotification function)
-      await sendPushNotification(pushToken, title, message);
+      sendSMS(orderData.phone, "Gricko automatska poruka: "+message);
+      //await sendPushNotification(pushToken, title, message);
       console.log('Push notification sent to client');
       }
     }

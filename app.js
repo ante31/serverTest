@@ -11,6 +11,7 @@ const database = require('./dbConnect');
 const generalSocket = require('./sockets/generalSocket');
 const cjenikSocket = require('./sockets/cjenikSocket');
 const ordersSocket = require('./sockets/ordersSocket');
+const frontendStatusSocket = require('./sockets/frontendStatusSocket');
 
 // Routeri
 const cjenikRouter = require('./routes/cjenikRouter');
@@ -67,6 +68,7 @@ app.use('/annotations', annotationsRouter);
 generalSocket(io, database);
 ordersSocket(io, database);
 cjenikSocket(io, database);
+frontendStatusSocket(io, database);
 
 // Pokretanje servera
 server.listen(port, () => {
