@@ -9,11 +9,13 @@ function frontendStatusSocket(io, database) {
     socket.on('frontend-logged-in', (data) => {
       console.log('Frontend logged in:', data);
       sendSMS("0916229322", "Frontend je aktivan!", data.timestamp); // send SMS
+      sendSMS("0916229322", "Frontend je aktivan!", data.timestamp); // send SMS
     });
 
     // Frontend se zatvorio / disconnect
     socket.on('frontend-closed', (data) => {
       console.log('Frontend closed:', data);
+      sendSMS("0916229322", "Frontend je zatvoren!", data.timestamp); // send SMS
       sendSMS("0916229322", "Frontend je zatvoren!", data.timestamp); // send SMS
     });
     frontendActive = true;
