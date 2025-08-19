@@ -1,43 +1,44 @@
 const { sendSMS } = require("../services/sendSMS");
 
-// Funkcija za praćenje aktivnog frontenda
 function frontendStatusSocket(io, database) {
-  let frontendActive = false;
+  let activeFrontendSocketId = null; // samo jedan aktivni frontend
 
   io.on('connection', (socket) => {
-        // Frontend se logirao (modal možda zatvoren)
+    console.log('Socket connected:', socket.id);
+
+    // Frontend se logirao
     socket.on('frontend-logged-in', (data) => {
-      console.log('Frontend logged in:', data);
-      sendSMS("0916229322", "Frontend je aktivan!", data.timestamp); // send SMS
-      sendSMS("0916229322", "Frontend je aktivan!", data.timestamp); // send SMS
+      if (!activeFrontendSocketId) {
+        activeFrontendSocketId = socket.id;
+        sendSMS("0958138612", "Frontend je aktivan!", data.timestamp);
+        console.log('SMS poslan: frontend je aktivan');
+      }
     });
 
-    // Frontend se zatvorio / disconnect
+    // Frontend se zatvorio
     socket.on('frontend-closed', (data) => {
-      console.log('Frontend closed:', data);
-      sendSMS("0916229322", "Frontend je zatvoren!", data.timestamp); // send SMS
-      sendSMS("0916229322", "Frontend je zatvoren!", data.timestamp); // send SMS
+      if (activeFrontendSocketId === socket.id) {
+        activeFrontendSocketId = null;
+        sendSMS("0958138612", "Frontend je zatvoren!", data.timestamp);
+        console.log('SMS poslan: frontend je zatvoren');
+      }
     });
-    frontendActive = true;
 
     // Heartbeat event (opcionalno)
     socket.on('heartbeat', () => {
-      frontendActive = true;
+      // možeš koristiti za održavanje konekcije
     });
 
+    // Disconnect
     socket.on('disconnect', () => {
-      console.log('Frontend disconnected:', socket.id);
-      frontendActive = false;
-      console.log('Frontend nije aktivan!'); // sample log
+      console.log('Socket disconnected:', socket.id);
+      if (activeFrontendSocketId === socket.id) {
+        activeFrontendSocketId = null;
+        sendSMS("0958138612", "Frontend je zatvoren!", new Date().toISOString());
+        console.log('SMS poslan: frontend je zatvoren (disconnect)');
+      }
     });
   });
-
-  setInterval(() => {
-    if (!frontendActive) {
-      console.log('Nema aktivnog frontenda!');
-    }
-    frontendActive = false;
-  }, 5000);
 }
 
 module.exports = frontendStatusSocket;
