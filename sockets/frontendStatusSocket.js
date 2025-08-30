@@ -31,6 +31,14 @@ function frontendStatusSocket(io) {
       setHeartbeatTimeout(socket);
     });
 
+    socket.on("frontend-closed", (data) => {
+      if (activeFrontend && activeFrontend.socketId === socket.id) {
+        activeFrontend = null;
+        console.log("✅ SMS poslan: frontend je zatvoren");
+        sendSMS("0958138612", "Frontend je zatvoren!", data.timestamp);
+      }
+    });
+
     socket.on("heartbeat", (data) => {
       if (activeFrontend && activeFrontend.socketId === socket.id) {
         activeFrontend.lastHeartbeat = Date.now();
