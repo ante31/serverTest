@@ -3,7 +3,7 @@ const { sendSMS } = require("../services/sendSMS");
 function frontendStatusSocket(io) {
   let activeFrontend = null; // { socketId, lastHeartbeat, timeoutHandle }
 
-  const HEARTBEAT_TIMEOUT = 40000; // 40 sekundi
+  const HEARTBEAT_TIMEOUT = 3 * 60 * 1000; // 3 minute
 
   const setHeartbeatTimeout = (socket) => {
     if (!activeFrontend) return;
