@@ -19,17 +19,19 @@ function frontendStatusSocket(io) {
   io.on("connection", (socket) => {
     console.log("🔌 Socket connected:", socket.id);
 
-    socket.on("frontend-logged-in", (data) => {
-      if (!activeFrontend) {
-        activeFrontend = { socketId: socket.id, lastHeartbeat: Date.now(), timeoutHandle: null };
-        sendSMS("0958138612", "Frontend je aktivan!", data.timestamp);
-        console.log("✅ SMS poslan: frontend je aktivan");
-      } else {
-        console.log("♻️ Frontend se reconnectao:", socket.id);
-        activeFrontend.socketId = socket.id;
-      }
-      setHeartbeatTimeout(socket);
-    });
+socket.on("frontend-logged-in", (data) => {
+  if (!activeFrontend) {
+    activeFrontend = { socketId: socket.id, lastHeartbeat: Date.now(), timeoutHandle: null };
+    sendSMS("0958138612", "Frontend je aktivan!", data.timestamp);
+    console.log("✅ SMS poslan: frontend je aktivan");
+  } else {
+    console.log("♻️ Frontend se reconnectao:", socket.id);
+    activeFrontend.socketId = socket.id;   // ✅ uvijek update socketId
+    activeFrontend.lastHeartbeat = Date.now();
+  }
+  setHeartbeatTimeout(socket);
+});
+
 
     socket.on("frontend-closed", (data) => {
       if (activeFrontend && activeFrontend.socketId === socket.id) {
@@ -39,13 +41,17 @@ function frontendStatusSocket(io) {
       }
     });
 
-    socket.on("heartbeat", (data) => {
-      if (activeFrontend && activeFrontend.socketId === socket.id) {
-        activeFrontend.lastHeartbeat = Date.now();
-        console.log(`💓 Last heartbeat: ${data.timestamp}`);
-        setHeartbeatTimeout(socket); // resetiraj timeout svaki put kad stigne heartbeat
-      }
-    });
+socket.on("heartbeat", (data) => {
+  if (activeFrontend && activeFrontend.socketId === socket.id) {
+    activeFrontend.lastHeartbeat = Date.now();
+    console.log(`💓 Last heartbeat: ${data.timestamp}`);
+    setHeartbeatTimeout(socket); // resetiraj timeout svaki put kad stigne heartbeat
+    
+    // ➡️ Pošalji potvrdu natrag frontendu
+    socket.emit("heartbeat-ack", { timestamp: new Date().toISOString() });
+  }
+});
+
 
     socket.on("disconnect", () => {
       console.log("⚠️ Socket disconnected:", socket.id);
